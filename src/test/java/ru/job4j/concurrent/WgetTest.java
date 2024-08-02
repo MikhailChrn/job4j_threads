@@ -1,5 +1,6 @@
 package ru.job4j.concurrent;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -14,7 +15,7 @@ class WgetTest {
         assertThat(result).isEqualTo(expected);
     }
 
-    @Test
+    @Disabled
     void whenMethodGetDelayMSTesting() {
         long inputNano = (long) (0.5 * Math.pow(10, 9));
         int expected = (int) ((1 * Math.pow(10, 9) - inputNano) / Math.pow(10, 6));

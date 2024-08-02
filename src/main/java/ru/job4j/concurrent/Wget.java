@@ -5,8 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Package size is measured in one Kbyte;
- * Download speed is measured in [Kbyte/s];
+ * Package size is 1[Kb] = 1024[byte];
+ * Download speed is measured in [Byte/s];
  */
 
 public class Wget implements Runnable {
@@ -34,6 +34,7 @@ public class Wget implements Runnable {
         return str[str.length - 1];
     }
 
+    @Deprecated
     static int getDelayMS(long downLoadNano) {
         return (int) ((1 * Math.pow(10, 9) - downLoadNano) / Math.pow(10, 6));
     }
@@ -46,7 +47,7 @@ public class Wget implements Runnable {
 
     private static boolean isValidSpeed(String speed) {
         int sp = Integer.parseInt(speed);
-        return 0 < sp && sp < 1000;
+        return 0 < sp && sp < 1_000_000;
     }
 
     private static void isValidArguments(String[] args) throws Exception {
@@ -57,37 +58,35 @@ public class Wget implements Runnable {
             throw new IllegalArgumentException("Invalid URL value");
         }
         if (!isValidSpeed(args[1])) {
-            throw new IllegalArgumentException("Invalid speed value. Speed should be in the range 0...999 [Kb/s]");
+            throw new IllegalArgumentException("Invalid speed value. Download speed should be in the range 0...999999 [Byte/s]");
         }
     }
 
     private void fileDownload(String url, int speed) throws IOException {
         try (InputStream input = new URL(url).openStream();
              OutputStream output = new FileOutputStream(new File(getNameFileFromUrl(url)))) {
-            long startDownloadAt = System.nanoTime();
             byte[] dataBuffer = new byte[PACKAGE_SIZE];
             int bytesRead;
+            int delay;
             int counter = 0;
-            long downloadAt;
+            long startAt = System.currentTimeMillis();
             while ((bytesRead = input.read(dataBuffer, 0, dataBuffer.length)) != -1) {
-                downloadAt = System.nanoTime();
+                counter += bytesRead;
                 output.write(dataBuffer, 0, bytesRead);
-                counter++;
-                if (counter == this.speed && getDelayMS(System.nanoTime() - downloadAt) > 0) {
+                if (counter >= this.speed && (System.currentTimeMillis() - startAt) < Math.pow(10, 3)) {
+                    delay = (int) ((1 * Math.pow(10, 3) - (System.currentTimeMillis() - startAt)));
                     try {
-                        Thread.sleep(getDelayMS(System.nanoTime() - downloadAt));
+                        System.out.println(delay + " ms");
+                        Thread.sleep(delay);
                     } catch (InterruptedException ex) {
                         System.out.println(ex.getMessage());
                     }
                 }
                 if (counter > speed) {
                     counter = 0;
+                    startAt = System.currentTimeMillis();
                 }
             }
-            System.out.printf("Скорость загрузки составила : %d [Kb/s] \n", this.speed);
-            System.out.printf("Время загрузки составило : %d [ms]",
-                    (int) ((System.nanoTime() - startDownloadAt) / Math.pow(10, 6)));
-
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
