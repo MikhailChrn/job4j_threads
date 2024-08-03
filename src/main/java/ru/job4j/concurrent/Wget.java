@@ -67,24 +67,24 @@ public class Wget implements Runnable {
              OutputStream output = new FileOutputStream(new File(getNameFileFromUrl(url)))) {
             byte[] dataBuffer = new byte[PACKAGE_SIZE];
             int bytesRead;
-            int delay;
+            int intervalMillis = 0;
             int counter = 0;
-            long startAt = System.currentTimeMillis();
+            long startAtMillis = System.currentTimeMillis();
             while ((bytesRead = input.read(dataBuffer, 0, dataBuffer.length)) != -1) {
                 counter += bytesRead;
                 output.write(dataBuffer, 0, bytesRead);
-                if (counter >= this.speed && (System.currentTimeMillis() - startAt) < Math.pow(10, 3)) {
-                    delay = (int) ((1 * Math.pow(10, 3) - (System.currentTimeMillis() - startAt)));
-                    try {
-                        System.out.println(delay + " ms");
-                        Thread.sleep(delay);
-                    } catch (InterruptedException ex) {
-                        System.out.println(ex.getMessage());
+                if (counter >= this.speed) {
+                    intervalMillis = (int) (System.currentTimeMillis() - startAtMillis);
+                    if (intervalMillis < 1_000) {
+                        try {
+                            Thread.sleep(1_000 - intervalMillis);
+                            System.out.printf("Delay: %d [ms];\n", 1_000 - intervalMillis);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                }
-                if (counter > speed) {
                     counter = 0;
-                    startAt = System.currentTimeMillis();
+                    startAtMillis = System.currentTimeMillis();
                 }
             }
         } catch (IOException ex) {
