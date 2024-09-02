@@ -22,9 +22,7 @@ public class SimpleBlockingQueue<T> {
         while (queue.size() == capacity) {
             wait();
         }
-        if (queue.isEmpty()) {
-            notifyAll();
-        }
+        notifyAll();
         queue.add(value);
     }
 
@@ -32,9 +30,8 @@ public class SimpleBlockingQueue<T> {
         while (queue.isEmpty()) {
             wait();
         }
-        if (queue.size() == capacity) {
-            notifyAll();
-        }
-        return queue.remove();
+        T result = queue.poll();
+        notifyAll();
+        return result;
     }
 }
