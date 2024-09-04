@@ -3,6 +3,7 @@ package ru.job4j.synch;
 public class ParallelSearch {
     public static void main(String[] args) {
         SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<Integer>(10);
+
         final Thread consumer = new Thread(
                 () -> {
                     while (!Thread.currentThread().isInterrupted()) {
@@ -16,9 +17,7 @@ public class ParallelSearch {
                 }
         );
 
-        consumer.start();
-
-        new Thread(
+        final Thread producer = new Thread(
                 () -> {
                     for (int index = 0; index != 3; index++) {
                         try {
@@ -34,11 +33,14 @@ public class ParallelSearch {
                         }
                     }
                 }
+        );
 
-        ).start();
+        consumer.start();
+
+        producer.start();
 
         try {
-            Thread.sleep(2000);
+            producer.join();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
