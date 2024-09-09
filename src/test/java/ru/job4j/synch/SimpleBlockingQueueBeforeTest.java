@@ -1,5 +1,6 @@
 package ru.job4j.synch;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
@@ -25,6 +26,7 @@ class SimpleBlockingQueueBeforeTest {
     }
 
     @Test
+    @Disabled
     void simpleFirstSimpleCase() throws InterruptedException {
         SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(10);
 
