@@ -1,79 +1,47 @@
 package ru.job4j.synch;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
-import java.util.Random;
-
-class SimpleBlockingQueueTest {
-    static void produce(String title, SimpleBlockingQueue<Integer> queue, int delay) throws InterruptedException {
-        System.out.printf("[%s] started \n", title);
-        while (true) {
-            Integer i = new Random().nextInt(100);
-            System.out.printf("[%s] produce : %d \n", title, i);
-            queue.offer(i);
-            Thread.sleep(delay);
-        }
-    }
-
-    static void consume(String title, SimpleBlockingQueue<Integer> queue, int delay) throws InterruptedException {
-        System.out.printf("[%s] started \n", title);
-        while (true) {
-            Integer i = queue.poll();
-            System.out.printf("[%s] consume : %d \n", title, i);
-            Thread.sleep(delay);
-        }
-    }
-
+public class SimpleBlockingQueueTest {
     @Test
-    void simpleFirstSimpleCase() throws InterruptedException {
-        SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(10);
+    public void whenFetchAllThenGetIt() throws InterruptedException {
+        final List<Integer> buffer = new ArrayList<>();
+        final SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(5);
 
-        Thread p1 = new Thread(
+        Thread producer = new Thread(
                 () -> {
-                    try {
-                        produce(Thread.currentThread().getName(), queue, 150);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    for (int i = 0; i < 5; i++) {
+                        try {
+                            queue.offer(i);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                }, "Producer #1"
+                }
         );
 
-        Thread c1 = new Thread(
+        producer.start();
+        Thread consumer = new Thread(
                 () -> {
-                    try {
-                        consume(Thread.currentThread().getName(), queue, 500);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    while (!queue.isEmpty() || !Thread.currentThread().isInterrupted()) {
+                        try {
+                            buffer.add(queue.poll());
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
+                        }
                     }
-                }, "Consumer #1"
+                }
         );
 
-        Thread c2 = new Thread(
-                () -> {
-                    try {
-                        consume(Thread.currentThread().getName(), queue, 500);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }, "Consumer #2"
-        );
-
-        Thread c3 = new Thread(
-                () -> {
-                    try {
-                        consume(Thread.currentThread().getName(), queue, 500);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }, "Consumer #3"
-        );
-
-        p1.start();
-        Thread.sleep(1000);
-        c1.start();
-        c2.start();
-        c3.start();
-        Thread.sleep(10000);
-        Thread.interrupted();
+        consumer.start();
+        producer.join();
+        consumer.interrupt();
+        consumer.join();
+        assertThat(buffer).containsExactly(0, 1, 2, 3, 4);
     }
 }
