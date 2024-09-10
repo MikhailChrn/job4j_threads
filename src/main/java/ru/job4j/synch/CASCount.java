@@ -14,11 +14,11 @@ public class CASCount {
     }
 
     public void increment() {
-        int exp = get() + 1;
         int value;
         do {
-            value = count.incrementAndGet();
-        } while (!count.compareAndSet(exp, value));
+            value = get() + 1;
+            count.set(value);
+        } while (!count.compareAndSet(value, get()));
     }
 
     public int get() {
