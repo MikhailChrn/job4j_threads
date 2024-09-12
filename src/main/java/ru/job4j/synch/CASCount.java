@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @ThreadSafe
 public class CASCount {
-
     private final AtomicInteger count = new AtomicInteger();
 
     public CASCount() {
@@ -15,10 +14,11 @@ public class CASCount {
 
     public void increment() {
         int previous;
+        int value;
         do {
             previous = get();
-            count.set(previous + 1);
-        } while (!count.compareAndSet(previous + 1, get()));
+            value = previous + 1;
+        } while (!count.compareAndSet(previous, value));
     }
 
     public int get() {
