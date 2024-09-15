@@ -1,4 +1,4 @@
-package ru.job4j.synch;
+package ru.job4j.pool;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
