@@ -13,15 +13,12 @@ public class EmailNotification {
     }
 
     public void emailTo(User user) {
-        this.executorPool.submit(new Runnable() {
-            @Override
-            public void run() {
+        executorPool.submit(() ->
                 send(String.format("Notification %s to email %s", user.username(), user.email()),
                         String.format("Add a new event to %s", user.username()),
                         user.email()
-                );
-            }
-        });
+                )
+        );
     }
 
     public void send(String subject, String body, String email) {
