@@ -31,7 +31,7 @@ public class ParallelArraySearch<V> {
             Integer result = -1;
 
             if (this.to - this.from <= 10) {
-                return getIndex(array, value, this.from, this.to);
+                return getIndex();
             }
 
             int middle = (this.from + this.to) / 2;
@@ -50,10 +50,10 @@ public class ParallelArraySearch<V> {
             return left != -1 ? left : right;
         }
 
-        private int getIndex(V[] array, V value, int from, int to) {
+        private int getIndex() {
             int result = -1;
-            for (int i = from; i < to; i++) {
-                if (value.equals(array[i])) {
+            for (int i = this.from; i < this.to; i++) {
+                if (this.value.equals(this.array[i])) {
                     result = i;
                     break;
                 }
